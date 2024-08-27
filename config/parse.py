@@ -92,7 +92,7 @@ def normalize_config(config_file):
             ({**defaults.core_defaults(cpu, 'L2C'), 'lower_level': 'LLC'} for cpu in cores),
             (defaults.core_defaults(cpu, 'STLB', ll_name='PTW') for cpu in cores)
             )
-
+    
     ptws = util.combine_named(
             config_file.get('ptws',[]),
 
