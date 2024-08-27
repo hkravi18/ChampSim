@@ -44,6 +44,8 @@ struct phase_stats {
   std::vector<O3_CPU::stats_type> roi_cpu_stats, sim_cpu_stats;
   std::vector<CACHE::stats_type> roi_cache_stats, sim_cache_stats;
   std::vector<DRAM_CHANNEL::stats_type> roi_dram_stats, sim_dram_stats;
+  // hkr : adding a vector of bank_stats_type to store the stats of the banks
+  std::vector<std::vector<CACHE::bank_stats_type>> banks_cache_stats;
 };
 
 } // namespace champsim

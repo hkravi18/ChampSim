@@ -78,6 +78,37 @@ void champsim::plain_printer::print(CACHE::stats_type stats)
   }
 }
 
+// hkr : Print the stats of the banks for each cache
+void champsim::plain_printer::print(std::vector<CACHE::bank_stats_type> banks_cache_stats)
+{
+  constexpr std::array<std::pair<std::string_view, std::size_t>, 5> types{
+      {std::pair{"LOAD", champsim::to_underlying(access_type::LOAD)}, std::pair{"RFO", champsim::to_underlying(access_type::RFO)},
+       std::pair{"PREFETCH", champsim::to_underlying(access_type::PREFETCH)}, std::pair{"WRITE", champsim::to_underlying(access_type::WRITE)},
+       std::pair{"TRANSLATION", champsim::to_underlying(access_type::TRANSLATION)}}};
+
+  for (auto stats: banks_cache_stats) {
+    for (std::size_t cpu = 0; cpu < NUM_CPUS; ++cpu) {
+      uint64_t TOTAL_HIT = 0, TOTAL_MISS = 0;
+      for (const auto& type : types) {
+        TOTAL_HIT += stats.hits.at(type.second).at(cpu);
+        TOTAL_MISS += stats.misses.at(type.second).at(cpu);
+      }
+
+      fmt::print(stream, "{} TOTAL        ACCESS: {:10d} HIT: {:10d} MISS: {:10d}\n", stats.name, TOTAL_HIT + TOTAL_MISS, TOTAL_HIT, TOTAL_MISS);
+      for (const auto& type : types) {
+        fmt::print(stream, "{} {:<12s} ACCESS: {:10d} HIT: {:10d} MISS: {:10d}\n", stats.name, type.first,
+                  stats.hits[type.second][cpu] + stats.misses[type.second][cpu], stats.hits[type.second][cpu], stats.misses[type.second][cpu]);
+      }
+
+      fmt::print(stream, "{} PREFETCH REQUESTED: {:10} ISSUED: {:10} USEFUL: {:10} USELESS: {:10}\n", stats.name, stats.pf_requested, stats.pf_issued,
+                stats.pf_useful, stats.pf_useless);
+
+      fmt::print(stream, "{} AVERAGE MISS LATENCY: {:.4g} cycles\n", stats.name, stats.avg_miss_latency);
+    }
+    std::cout<<"\n";
+  }
+}
+
 void champsim::plain_printer::print(DRAM_CHANNEL::stats_type stats)
 {
   fmt::print(stream, "\n{} RQ ROW_BUFFER_HIT: {:10}\n  ROW_BUFFER_MISS: {:10}\n", stats.name, stats.RQ_ROW_BUFFER_HIT, stats.RQ_ROW_BUFFER_MISS);
@@ -105,6 +136,10 @@ void champsim::plain_printer::print(champsim::phase_stats& stats)
 
     for (const auto& stat : stats.sim_cache_stats)
       print(stat);
+
+    fmt::print(stream, "\nBank Statistics\n\n");
+    for (const auto& stat : stats.banks_cache_stats)
+      print(stat); 
   }
 
   fmt::print(stream, "\nRegion of Interest Statistics\n");
@@ -115,6 +150,10 @@ void champsim::plain_printer::print(champsim::phase_stats& stats)
   for (const auto& stat : stats.roi_cache_stats)
     print(stat);
 
+  fmt::print(stream, "\nBank Statistics\n\n");
+  for (const auto& stat : stats.banks_cache_stats)
+    print(stat);
+  
   fmt::print(stream, "\nDRAM Statistics\n");
   for (const auto& stat : stats.roi_dram_stats)
     print(stat);

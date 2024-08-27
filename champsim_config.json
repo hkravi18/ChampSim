@@ -158,7 +158,7 @@
         "prefetch_activate": "LOAD,PREFETCH",
         "prefetcher": "no",
         "replacement": "lru",
-        "banks": 1
+        "banks": 2
     },
 
     "physical_memory": {

@@ -54,6 +54,23 @@ struct cache_stats {
   uint64_t total_miss_latency = 0;
 };
 
+struct bank_stats {
+  std::string name;
+  // prefetch stats
+  uint64_t pf_requested = 0;
+  uint64_t pf_issued = 0;
+  uint64_t pf_useful = 0;
+  uint64_t pf_useless = 0;
+  uint64_t pf_fill = 0;
+
+  std::array<std::array<uint64_t, NUM_CPUS>, champsim::to_underlying(access_type::NUM_TYPES)> hits = {};
+  std::array<std::array<uint64_t, NUM_CPUS>, champsim::to_underlying(access_type::NUM_TYPES)> misses = {};
+
+  double avg_miss_latency = 0;
+  uint64_t total_miss_latency = 0;
+};
+
+
 class CACHE : public champsim::operable
 {
   enum [[deprecated(
@@ -176,9 +193,15 @@ public:
 
   using stats_type = cache_stats;
 
+  // hkr : separate bank stats type (used in phase_info class)
+  using bank_stats_type = bank_stats;
+
+  // hkr : number of banks parameter for each cache
   uint64_t NUM_BANKS{1};
 
   stats_type sim_stats, roi_stats;
+  // hkr : a list of banks for each cache
+  std::vector<bank_stats> banks_stats;
 
   std::deque<mshr_type> MSHR;
   std::deque<mshr_type> inflight_writes;
@@ -472,6 +495,14 @@ public:
         module_pimpl(std::make_unique<module_model<P_FLAG, R_FLAG>>(this)), NUM_BANKS(b.m_banks)
   {
     std::cout<<"name : "<<b.m_name<<" banks : "<<b.m_banks<<"\n";
+
+    // hkr : Resizing the banks_stats vector
+    banks_stats.resize(NUM_BANKS);
+    // hkr : Give names to each bank
+    for (uint64_t i = 0; i < NUM_BANKS; i++)
+    {
+      banks_stats[i].name = b.m_name + "_bank_" + std::to_string(i);
+    }
   }
 };
 
