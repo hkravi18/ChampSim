@@ -190,6 +190,14 @@ bool CACHE::try_hit(const tag_lookup_type& handle_pkt)
 
   if (hit) {
     ++sim_stats.hits[champsim::to_underlying(handle_pkt.type)][handle_pkt.cpu];
+    // hkr : updating banks stats on a cache miss
+    if (NUM_BANKS) {
+      uint32_t bank_index = get_bank_index(handle_pkt.address);
+      ++banks_stats[bank_index].hits[champsim::to_underlying(handle_pkt.type)][handle_pkt.cpu];
+
+      // hkr : just some logs to show address, associated set and bank 
+      // std::cout<<"["<<NAME<<"] (hit) address : "<<handle_pkt.address<<" set index : "<<get_set_index(handle_pkt.address)<<" bank index : "<<get_bank_index(handle_pkt.address)<<"\n";
+    }
 
     // update replacement policy
     const auto way_idx = static_cast<std::size_t>(std::distance(set_begin, way)); // cast protected by earlier assertion
@@ -287,7 +295,15 @@ bool CACHE::handle_miss(const tag_lookup_type& handle_pkt)
   }
 
   ++sim_stats.misses[champsim::to_underlying(handle_pkt.type)][handle_pkt.cpu];
+  // hkr : updating banks stats on a cache miss
+  if (NUM_BANKS) {
+    uint32_t bank_index = get_bank_index(handle_pkt.address);
+    ++banks_stats[bank_index].misses[champsim::to_underlying(handle_pkt.type)][handle_pkt.cpu];
 
+    // hkr : just some logs to show address, associated set and bank 
+    // std::cout<<"["<<NAME<<"] (miss) address : "<<handle_pkt.address<<" set index : "<<get_set_index(handle_pkt.address)<<" bank index : "<<get_bank_index(handle_pkt.address)<<"\n";
+  }
+  
   return true;
 }
 
@@ -303,6 +319,14 @@ bool CACHE::handle_write(const tag_lookup_type& handle_pkt)
   inflight_writes.back().event_cycle = current_cycle + (warmup ? 0 : FILL_LATENCY);
     
   ++sim_stats.misses[champsim::to_underlying(handle_pkt.type)][handle_pkt.cpu];
+  // hkr : updating banks stats on a cache miss
+  if (NUM_BANKS) {
+    uint32_t bank_index = get_bank_index(handle_pkt.address);
+    ++banks_stats[bank_index].misses[champsim::to_underlying(handle_pkt.type)][handle_pkt.cpu];
+
+    // hkr : just some logs to show address, associated set and bank 
+    // std::cout<<"["<<NAME<<"] (write) address : "<<handle_pkt.address<<" set index : "<<get_set_index(handle_pkt.address)<<" bank index : "<<get_bank_index(handle_pkt.address)<<"\n";
+  }
 
   return true;
 }
@@ -430,6 +454,18 @@ std::pair<It, It> get_span(It anchor, typename std::iterator_traits<It>::differe
 {
   auto begin = std::next(anchor, set_idx * num_way);
   return {std::move(begin), std::next(begin, num_way)};
+}
+
+// hkr : Function to get the bank no (or id) from the address 
+std::size_t CACHE::get_bank_index(uint64_t address) const {
+    // hkr : get the set index from the address
+    std::size_t set_index = get_set_index(address);
+    
+    // hkr : number of sets per bank
+    std::size_t sets_per_bank = NUM_SET / NUM_BANKS;
+
+    // hkr : identifying the bank by dividing the set index by sets_per_bank
+    return set_index / sets_per_bank;
 }
 
 auto CACHE::get_set_span(uint64_t address) -> std::pair<std::vector<BLOCK>::iterator, std::vector<BLOCK>::iterator>
@@ -678,6 +714,8 @@ void CACHE::initialize()
 
 void CACHE::begin_phase()
 {
+  // hkr : logs
+  // std::cout<<"\nBegin Phase\n";
   stats_type new_roi_stats, new_sim_stats;
 
   new_roi_stats.name = NAME;
@@ -691,10 +729,21 @@ void CACHE::begin_phase()
     ul->roi_stats = ul_new_roi_stats;
     ul->sim_stats = ul_new_sim_stats;
   }
+
+  // hkr : Reinitializing the bank stats in the beginning of the phase
+  if (NUM_BANKS) {
+    for (uint32_t i=0; i<NUM_BANKS; i++) {
+      bank_stats_type new_bank_stats;
+      banks_stats[i] = new_bank_stats;
+      banks_stats[i].name = NAME + "_bank_" + std::to_string(i);
+    }
+  }
 }
 
 void CACHE::end_phase(unsigned finished_cpu)
 {
+  // hkr : logs
+  // std::cout<<"\nEnd Phase\n";
   auto total_miss = 0ull;
   for (auto type : {access_type::LOAD, access_type::RFO, access_type::PREFETCH, access_type::WRITE, access_type::TRANSLATION}) {
     total_miss =
@@ -709,6 +758,23 @@ void CACHE::end_phase(unsigned finished_cpu)
     roi_stats.hits.at(champsim::to_underlying(type)).at(finished_cpu) = sim_stats.hits.at(champsim::to_underlying(type)).at(finished_cpu);
     roi_stats.misses.at(champsim::to_underlying(type)).at(finished_cpu) = sim_stats.misses.at(champsim::to_underlying(type)).at(finished_cpu);
   }
+
+  // hkr : each bank logs
+  // if (NUM_BANKS) {
+  //   std::cout<<"\n"<<"["<<NAME<<"] CPUS : "<<NUM_CPUS<<" BANKS : "<<NUM_BANKS<<"\n";
+  //   for (int i=0; i<NUM_BANKS; i++) {
+  //     std::cout<<"BANK : "<<i<<"\n";
+  //     for (int j=0; j<NUM_CPUS; j++) {
+  //       std::cout<<"CPU : "<<j<<" | ";
+  //       for (auto type : {access_type::LOAD, access_type::RFO, access_type::PREFETCH, access_type::WRITE, access_type::TRANSLATION}) {
+  //         std::cout<<"("<<champsim::to_underlying(type)<<", ";
+  //         std::cout<<banks_stats[i].misses.at(champsim::to_underlying(type)).at(j)<<") ";
+  //       }
+  //       std::cout<<"\n";
+  //     }
+  //     std::cout<<"\n";
+  //   }
+  // }
 
   roi_stats.pf_requested = sim_stats.pf_requested;
   roi_stats.pf_issued = sim_stats.pf_issued;

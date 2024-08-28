@@ -51,8 +51,7 @@
         "prefetch_as_load": false,
         "virtual_prefetch": true,
         "prefetch_activate": "LOAD,PREFETCH",
-        "prefetcher": "no_instr",
-        "banks": 1
+        "prefetcher": "no_instr"
     },
 
     "L1D": {
@@ -68,8 +67,7 @@
         "prefetch_as_load": false,
         "virtual_prefetch": false,
         "prefetch_activate": "LOAD,PREFETCH",
-        "prefetcher": "no",
-        "banks": 1
+        "prefetcher": "no"
     },
 
     "L2C": {
@@ -158,7 +156,7 @@
         "prefetch_activate": "LOAD,PREFETCH",
         "prefetcher": "no",
         "replacement": "lru",
-        "banks": 2
+        "banks": 1
     },
 
     "physical_memory": {

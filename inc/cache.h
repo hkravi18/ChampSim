@@ -162,6 +162,9 @@ class CACHE : public champsim::operable
   std::pair<set_type::const_iterator, set_type::const_iterator> get_set_span(uint64_t address) const;
   std::size_t get_set_index(uint64_t address) const;
 
+  // hkr : function to get the bank no from the address
+  std::size_t get_bank_index(uint64_t address) const;
+
   template <typename T>
   bool should_activate_prefetcher(const T& pkt) const;
 
@@ -201,7 +204,7 @@ public:
 
   stats_type sim_stats, roi_stats;
   // hkr : a list of banks for each cache
-  std::vector<bank_stats> banks_stats;
+  std::vector<bank_stats_type> banks_stats;
 
   std::deque<mshr_type> MSHR;
   std::deque<mshr_type> inflight_writes;
@@ -494,7 +497,7 @@ public:
         match_offset_bits(b.m_wq_full_addr), virtual_prefetch(b.m_va_pref), pref_activate_mask(b.m_pref_act_mask),
         module_pimpl(std::make_unique<module_model<P_FLAG, R_FLAG>>(this)), NUM_BANKS(b.m_banks)
   {
-    std::cout<<"name : "<<b.m_name<<" banks : "<<b.m_banks<<"\n";
+    std::cout<<"\n\ncache name : "<<b.m_name<<" banks assigned : "<<b.m_banks<<"\n";
 
     // hkr : Resizing the banks_stats vector
     banks_stats.resize(NUM_BANKS);
