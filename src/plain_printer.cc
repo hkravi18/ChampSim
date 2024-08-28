@@ -88,24 +88,29 @@ void champsim::plain_printer::print(std::vector<CACHE::bank_stats_type> banks_ca
        std::pair{"TRANSLATION", champsim::to_underlying(access_type::TRANSLATION)}}};
 
   for (auto stats: banks_cache_stats) {
+    uint64_t TOTAL_HIT = 0, TOTAL_MISS = 0;
     for (std::size_t cpu = 0; cpu < NUM_CPUS; ++cpu) {
-      uint64_t TOTAL_HIT = 0, TOTAL_MISS = 0;
       for (const auto& type : types) {
         TOTAL_HIT += stats.hits.at(type.second).at(cpu);
         TOTAL_MISS += stats.misses.at(type.second).at(cpu);
       }
 
-      fmt::print(stream, "{} TOTAL        ACCESS: {:10d} HIT: {:10d} MISS: {:10d}\n", stats.name, TOTAL_HIT + TOTAL_MISS, TOTAL_HIT, TOTAL_MISS);
-      for (const auto& type : types) {
-        fmt::print(stream, "{} {:<12s} ACCESS: {:10d} HIT: {:10d} MISS: {:10d}\n", stats.name, type.first,
-                  stats.hits[type.second][cpu] + stats.misses[type.second][cpu], stats.hits[type.second][cpu], stats.misses[type.second][cpu]);
-      }
+      
+      // hkr : Commenting other statistics for bank
 
-      fmt::print(stream, "{} PREFETCH REQUESTED: {:10} ISSUED: {:10} USEFUL: {:10} USELESS: {:10}\n", stats.name, stats.pf_requested, stats.pf_issued,
-                stats.pf_useful, stats.pf_useless);
+      // for (const auto& type : types) {
+      //   fmt::print(stream, "{} {:<12s} ACCESS: {:10d} HIT: {:10d} MISS: {:10d}\n", stats.name, type.first,
+      //             stats.hits[type.second][cpu] + stats.misses[type.second][cpu], stats.hits[type.second][cpu], stats.misses[type.second][cpu]);
+      // }
 
-      fmt::print(stream, "{} AVERAGE MISS LATENCY: {:.4g} cycles\n", stats.name, stats.avg_miss_latency);
+      // fmt::print(stream, "{} PREFETCH REQUESTED: {:10} ISSUED: {:10} USEFUL: {:10} USELESS: {:10}\n", stats.name, stats.pf_requested, stats.pf_issued,
+      //           stats.pf_useful, stats.pf_useless);
+
     }
+    
+    fmt::print(stream, "{} TOTAL        ACCESS: {:10d} HIT: {:10d} MISS: {:10d}\n", stats.name, TOTAL_HIT + TOTAL_MISS, TOTAL_HIT, TOTAL_MISS);
+    fmt::print(stream, "{} AVERAGE MISS LATENCY: {:.4g} cycles\n", stats.name, stats.avg_miss_latency);
+    
     std::cout<<"\n";
   }
 }
@@ -138,7 +143,7 @@ void champsim::plain_printer::print(champsim::phase_stats& stats)
     for (const auto& stat : stats.sim_cache_stats)
       print(stat);
 
-    fmt::print(stream, "\nBank Statistics\n\n");
+    fmt::print(stream, "\nBank Statistics (SIM) \n\n");
     for (const auto& stat : stats.banks_cache_stats)
       print(stat); 
   }
@@ -151,7 +156,7 @@ void champsim::plain_printer::print(champsim::phase_stats& stats)
   for (const auto& stat : stats.roi_cache_stats)
     print(stat);
 
-  fmt::print(stream, "\nBank Statistics\n\n");
+  fmt::print(stream, "\nBank Statistics (ROI) \n\n");
   for (const auto& stat : stats.banks_cache_stats)
     print(stat);
   

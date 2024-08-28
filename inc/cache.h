@@ -121,6 +121,9 @@ class CACHE : public champsim::operable
     uint32_t pf_metadata;
     uint32_t cpu;
 
+    // hkr : adding bank index to mshr to keep track of req's original bank when the miss is served
+    uint32_t bank_index{0};
+
     access_type type;
     bool prefetch_from_this;
 
