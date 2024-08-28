@@ -52,6 +52,9 @@ struct cache_stats {
 
   double avg_miss_latency = 0;
   uint64_t total_miss_latency = 0;
+
+  // hkr : NUMA latency for each cache
+  uint64_t CACHE_NUMA_LATENCY{0};
 };
 
 struct bank_stats {
@@ -497,7 +500,7 @@ public:
         match_offset_bits(b.m_wq_full_addr), virtual_prefetch(b.m_va_pref), pref_activate_mask(b.m_pref_act_mask),
         module_pimpl(std::make_unique<module_model<P_FLAG, R_FLAG>>(this)), NUM_BANKS(b.m_banks)
   {
-    std::cout<<"\n\ncache name : "<<b.m_name<<" banks assigned : "<<b.m_banks<<"\n";
+    std::cout<<"\ncache name : "<<b.m_name<<" banks assigned : "<<b.m_banks<<"\n";
 
     // hkr : Resizing the banks_stats vector
     banks_stats.resize(NUM_BANKS);

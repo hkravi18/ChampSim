@@ -4,6 +4,7 @@
     "page_size": 4096,
     "heartbeat_frequency": 10000000,
     "num_cores": 1,
+    "numa_latency": 2,
 
     "ooo_cpu": [
         {
@@ -156,7 +157,7 @@
         "prefetch_activate": "LOAD,PREFETCH",
         "prefetcher": "no",
         "replacement": "lru",
-        "banks": 1
+        "banks": 2
     },
 
     "physical_memory": {

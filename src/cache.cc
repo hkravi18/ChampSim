@@ -195,6 +195,11 @@ bool CACHE::try_hit(const tag_lookup_type& handle_pkt)
       uint32_t bank_index = get_bank_index(handle_pkt.address);
       ++banks_stats[bank_index].hits[champsim::to_underlying(handle_pkt.type)][handle_pkt.cpu];
 
+      // hkr : checking if the cpu core matches with the banks if not then adding NUMA_LATENCY to CACHE_NUMA_LATENCY   
+      if (handle_pkt.cpu != bank_index) {
+        sim_stats.CACHE_NUMA_LATENCY += NUMA_LATENCY;
+      } 
+
       // hkr : just some logs to show address, associated set and bank 
       // std::cout<<"["<<NAME<<"] (hit) address : "<<handle_pkt.address<<" set index : "<<get_set_index(handle_pkt.address)<<" bank index : "<<get_bank_index(handle_pkt.address)<<"\n";
     }
@@ -721,6 +726,7 @@ void CACHE::begin_phase()
   new_roi_stats.name = NAME;
   new_sim_stats.name = NAME;
 
+  // hkr : since the stats are renewed in the start of each phase so there is no need to update the cache numa latency
   roi_stats = new_roi_stats;
   sim_stats = new_sim_stats;
 
