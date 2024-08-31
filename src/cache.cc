@@ -321,7 +321,7 @@ bool CACHE::handle_miss(const tag_lookup_type& handle_pkt)
     ++banks_stats[bank_index].misses[champsim::to_underlying(handle_pkt.type)][handle_pkt.cpu];
 
     // hkr : just some logs to show address, associated set and bank 
-    // std::cout<<"[CPU:"<<handle_pkt.cpu<<"]"<<"["<<NAME<<"] (miss) address : "<<handle_pkt.address<<" set index : "<<get_set_index(handle_pkt.address)<<" bank index : "<<bank_index<<"\n";
+    std::cout<<"[CPU:"<<handle_pkt.cpu<<"]"<<"["<<NAME<<"] (miss) address : "<<handle_pkt.address<<" set index : "<<get_set_index(handle_pkt.address)<<" bank index : "<<bank_index<<"\n";
   }
   
   return true;
@@ -776,7 +776,7 @@ void CACHE::end_phase(unsigned finished_cpu)
   roi_stats.avg_miss_latency = std::ceil(roi_stats.total_miss_latency) / std::ceil(total_miss);
   
   // hkr: find the avg miss latency for each bank
-  for (int i=0; i<NUM_BANKS; i++) {
+  for (uint64_t i=0; i<NUM_BANKS; i++) {
     auto bank_total_miss = 0ull;
     for (auto type : {access_type::LOAD, access_type::RFO, access_type::PREFETCH, access_type::WRITE, access_type::TRANSLATION}) {
       bank_total_miss = std::accumulate(std::begin(banks_stats[i].misses.at(champsim::to_underlying(type))), std::end(banks_stats[i].misses.at(champsim::to_underlying(type))), bank_total_miss);

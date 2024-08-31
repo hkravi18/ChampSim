@@ -346,6 +346,8 @@ public:
     bool m_pref_load{};
     bool m_wq_full_addr{};
     bool m_va_pref{};
+
+    // hkr : m_banks member variable for the builder class
     uint64_t m_banks{};
 
     unsigned m_pref_act_mask{};
@@ -360,7 +362,7 @@ public:
         : m_name(other.m_name), m_freq_scale(other.m_freq_scale), m_sets(other.m_sets), m_ways(other.m_ways), m_pq_size(other.m_pq_size),
           m_mshr_size(other.m_mshr_size), m_hit_lat(other.m_hit_lat), m_fill_lat(other.m_fill_lat), m_latency(other.m_latency), m_max_tag(other.m_max_tag),
           m_max_fill(other.m_max_fill), m_offset_bits(other.m_offset_bits), m_pref_load(other.m_pref_load), m_wq_full_addr(other.m_wq_full_addr),
-          m_va_pref(other.m_va_pref), m_pref_act_mask(other.m_pref_act_mask), m_uls(other.m_uls), m_ll(other.m_ll), m_lt(other.m_lt), m_banks(other.m_banks)
+          m_va_pref(other.m_va_pref), m_banks(other.m_banks), m_pref_act_mask(other.m_pref_act_mask), m_uls(other.m_uls), m_ll(other.m_ll), m_lt(other.m_lt)
     {
     }
 
@@ -500,8 +502,8 @@ public:
       : champsim::operable(b.m_freq_scale), upper_levels(std::move(b.m_uls)), lower_level(b.m_ll), lower_translate(b.m_lt), NAME(b.m_name), NUM_SET(b.m_sets),
         NUM_WAY(b.m_ways), MSHR_SIZE(b.m_mshr_size), PQ_SIZE(b.m_pq_size), HIT_LATENCY((b.m_hit_lat > 0) ? b.m_hit_lat : b.m_latency - b.m_fill_lat),
         FILL_LATENCY(b.m_fill_lat), OFFSET_BITS(b.m_offset_bits), MAX_TAG(b.m_max_tag), MAX_FILL(b.m_max_fill), prefetch_as_load(b.m_pref_load),
-        match_offset_bits(b.m_wq_full_addr), virtual_prefetch(b.m_va_pref), pref_activate_mask(b.m_pref_act_mask),
-        module_pimpl(std::make_unique<module_model<P_FLAG, R_FLAG>>(this)), NUM_BANKS(b.m_banks)
+        match_offset_bits(b.m_wq_full_addr), virtual_prefetch(b.m_va_pref), pref_activate_mask(b.m_pref_act_mask), NUM_BANKS(b.m_banks),
+        module_pimpl(std::make_unique<module_model<P_FLAG, R_FLAG>>(this))
   {
     std::cout<<"\ncache name : "<<b.m_name<<" banks assigned : "<<b.m_banks<<"\n";
 

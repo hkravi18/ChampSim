@@ -59,6 +59,7 @@ void champsim::plain_printer::print(CACHE::stats_type stats)
        std::pair{"TRANSLATION", champsim::to_underlying(access_type::TRANSLATION)}}};
 
   for (std::size_t cpu = 0; cpu < NUM_CPUS; ++cpu) {
+    std::cout<<"CPU : "<<cpu<<"\n";
     uint64_t TOTAL_HIT = 0, TOTAL_MISS = 0;
     for (const auto& type : types) {
       TOTAL_HIT += stats.hits.at(type.second).at(cpu);
